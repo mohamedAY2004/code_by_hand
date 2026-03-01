@@ -1,4 +1,4 @@
-from helpers import chunk_text
+from helpers import chunk_text, semantic_chunk
 from fastapi import FastAPI, UploadFile, File, HTTPException, Request, APIRouter
 import pymupdf
 import uuid
@@ -26,7 +26,7 @@ async def upload_document(request: Request, file: UploadFile = File(...)):
     if not text.strip():
         raise HTTPException(status_code=400, detail="Document appears to be empty or unreadable.")
 
-    chunks = chunk_text(text)
+    chunks = semantic_chunk(embedder=request.app.embedder,text=text)
     embeddings = request.app.embedder.encode(chunks).tolist()
     ids = [str(uuid.uuid4()) for _ in chunks]
     metadatas = [{"source": file.filename, "chunk_index": i} for i in range(len(chunks))]
